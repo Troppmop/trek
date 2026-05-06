@@ -1,10 +1,12 @@
 services:
   # FastAPI Backend
   api:
-    build: ./app
+    build: 
+      context: ./app           # Move context to the root
+      dockerfile: Dockerfile # Points to the Dockerfile in the root
     volumes:
-      - .:/app           # Mounts your code
-      - ./app/data:/app/data # Explicitly mounts your 800MB data folder
+      - ./app:/app         # Map only the app contents to /app
+      - ./app/data:/app/data 
     ports:
       - "8000:8000"
     env_file:

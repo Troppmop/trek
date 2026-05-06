@@ -5,10 +5,11 @@ pydantic-settings==2.1.0
 
 # Database Drivers (Async)
 SQLAlchemy==2.0.23
-asyncpg==0.29.0
+asyncpg>=0.30.0  # Version 0.30.0+ added better support for Python 3.13
 redis==5.0.1
 motor==3.3.1
 elasticsearch[async]==8.11.0
+psycopg2-binary==2.9.5
 
 # Event Streaming
 aiokafka==0.10.0

@@ -14,20 +14,25 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
+# ... (Builder stage stays the same)
+
 # Final Stage
 FROM python:3.12-slim
-
 WORKDIR /app
 
-# Copy only the installed packages from the builder
-COPY --from=builder /root/.local /root/.local
-COPY . .
+# --- ADD THIS SECTION ---
+# Install ONLY the runtime library needed for Postgres
+RUN apt-get update && apt-get install -y \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+# -------------------------
 
-# Update PATH to include the local pip installs
+# Copy installed packages from builder
+COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
 
-# Expose FastAPI port
-EXPOSE 8000
+# Copy app code
+COPY . . 
 
-# Run with Uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

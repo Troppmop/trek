@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-from app.routes.stations import router as stations_router
-from app.routes.search import router as search_router
-from app.routes.plan import router as plan_router
+from routes.stations import router as stations_router
+from routes.search import router as search_router
+from routes.plan import router as plan_router
 
 router = APIRouter(prefix="/v1")
 
