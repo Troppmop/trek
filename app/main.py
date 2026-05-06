@@ -7,12 +7,16 @@ from dal.postgres import PostgresDAL
 from core.config import Settings
 
 settings = Settings()
-postgres_dal = PostgresDAL(connection_string=f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}/{settings.POSTGRES_DB}")
 
 # Add shutdown logic here, such as closing database connections
+def lifespan(app: FastAPI):
+    app.state.postgres_dal = PostgresDAL(connection_string=f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}/{settings.POSTGRES_DB}")
+    yield
+    # Cleanup code here (e.g., close DB connections)
+    app.state.postgres_dal.engine.dispose()
+    app.state.postgres_dal = None
 
-
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/health")
