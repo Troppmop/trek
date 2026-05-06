@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+
+# Docker & Logs
+.docker
+*.log
+
+# Databases & Data (The likely 1GB culprits)
+postgres_data/
+mongo_data/
+elasticsearch_data/
+kafka_data/
+
+# Your transit data files (since we mount them via volumes instead)
+*.txt
+*.csv
+*.json
+
+app/data/
