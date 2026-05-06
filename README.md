@@ -48,3 +48,6 @@ GET /api/v1/stations/nearby?lat=32.091940&lon=34.825525&limit=10
 /scripts: Python scripts for data ingestion and static processing.
 
 /scripts/data: Directory for GTFS source files.
+
+Why Trek?
+Standard LLMs and search engines struggle with precise K-Nearest Neighbor (KNN) calculations across tens of thousands of coordinates. Trek uses a PostGIS GiST Index, allowing it to identify the 100 closest transit stops in under 20ms—data that is mathematically accurate and pulled directly from official transit sources
