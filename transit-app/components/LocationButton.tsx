@@ -10,7 +10,7 @@ export default function LocationButton({ onLocationFound }: { onLocationFound: (
     navigator.geolocation.getCurrentPosition(async (pos) => {
       try {
         const { latitude, longitude } = pos.coords;
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/stations/nearby?lat=${latitude}&lon=${longitude}/`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/stations/nearby?lat=${latitude}&lon=${longitude}`);
         const nearbyStops = await res.json();
 
         // Map the IDs immediately so the ArrivalBoard fetch doesn't fail
