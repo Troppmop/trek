@@ -13,6 +13,7 @@ export default function MapView({ routeId, onStopClick, selectedStop }: MapViewP
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
+  const selectedMarkerRef = useRef<maplibregl.Marker | null>(null);
 
   // 1. INITIALIZE MAP
   useEffect(() => {
@@ -21,8 +22,8 @@ export default function MapView({ routeId, onStopClick, selectedStop }: MapViewP
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: 'https://tiles.openfreemap.org/styles/liberty',
-      center: [34.8, 32.0],
-      zoom: 9,
+      center: [34.817, 32.088], // Default to Israel center
+      zoom: 11,
     });
 
     const resizeObserver = new ResizeObserver(() => map.current?.resize());
@@ -35,12 +36,42 @@ export default function MapView({ routeId, onStopClick, selectedStop }: MapViewP
     };
   }, []);
 
-  // 2. DATA UPDATES
+  // 2. HIGHLIGHT SELECTED STOP (Nearby or Route Click)
+  useEffect(() => {
+    if (!map.current || !selectedStop) return;
+
+    // Remove previous selection marker
+    if (selectedMarkerRef.current) selectedMarkerRef.current.remove();
+
+    // Map coordinates (handle both API formats)
+    const lon = selectedStop.stop_lon || selectedStop.lon || selectedStop.longitude;
+    const lat = selectedStop.stop_lat || selectedStop.lat || selectedStop.latitude;
+
+    if (lon && lat) {
+      const el = document.createElement('div');
+      el.className = 'selected-marker';
+      el.style.width = '24px';
+      el.style.height = '24px';
+      el.style.backgroundColor = '#ef4444'; // Red for selected
+      el.style.border = '3px solid white';
+      el.style.borderRadius = '50%';
+      el.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.5)';
+
+      selectedMarkerRef.current = new maplibregl.Marker({ element: el })
+        .setLngLat([lon, lat])
+        .addTo(map.current);
+
+      map.current.flyTo({ center: [lon, lat], zoom: 15, duration: 2000 });
+    }
+  }, [selectedStop]);
+
+  // 3. ROUTE UPDATES
   useEffect(() => {
     if (!routeId || !map.current) return;
 
     const updateMap = async () => {
       try {
+        // Added slashes to avoid the 307 redirect error
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/routes/${routeId}/geometry/`);
         if (!res.ok) return;
         const geojson = await res.json();
@@ -54,12 +85,12 @@ export default function MapView({ routeId, onStopClick, selectedStop }: MapViewP
             id: 'route-line',
             type: 'line',
             source: 'route-line',
-            paint: { 'line-color': '#ff4400', 'line-width': 5 }
+            layout: { 'line-join': 'round', 'line-cap': 'round' },
+            paint: { 'line-color': '#2563eb', 'line-width': 5 }
           });
         }
 
-        // --- FIXED MARKER LOGIC ---
-        // 1. Clear markers from map and memory
+        // Clear markers
         markersRef.current.forEach(m => m.remove());
         markersRef.current = [];
 
@@ -68,29 +99,21 @@ export default function MapView({ routeId, onStopClick, selectedStop }: MapViewP
           const stops = await stopsRes.json();
           stops.forEach((stop: any) => {
             const el = document.createElement('div');
-            
-            // Fix: Explicitly prevent marker from capturing global drag events
             el.className = 'stop-marker';
-            el.style.width = '16px';
-            el.style.height = '16px';
+            el.style.width = '12px';
+            el.style.height = '12px';
             el.style.backgroundColor = 'white';
-            el.style.border = '2px solid #2563eb'; // blue-600
+            el.style.border = '2px solid #2563eb';
             el.style.borderRadius = '50%';
             el.style.cursor = 'pointer';
-            el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
 
-            // Fix Click/Teleport: Stop propagation and prevent default map behavior
             el.addEventListener('click', (e) => {
               e.preventDefault();
               e.stopPropagation();
               onStopClick(stop);
             });
 
-            // Fix Teleport: Explicitly set anchor to center
-            const marker = new maplibregl.Marker({ 
-                element: el, 
-                anchor: 'center' 
-            })
+            const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
               .setLngLat([stop.stop_lon, stop.stop_lat])
               .addTo(map.current!);
             
@@ -98,7 +121,7 @@ export default function MapView({ routeId, onStopClick, selectedStop }: MapViewP
           });
         }
 
-        // Auto-zoom
+        // Auto-zoom to route
         const coords = geojson.coordinates;
         if (coords.length > 0) {
           const bounds = coords.reduce((acc: any, coord: any) => acc.extend(coord), 
