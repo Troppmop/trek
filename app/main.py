@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from routes.router import router
 from dal.postgres import PostgresDAL
 from core.config import Settings
-
+from fastapi.middleware.cors import CORSMiddleware
 settings = Settings()
 
 # Add shutdown logic here, such as closing database connections
@@ -21,6 +21,14 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # In production, replace ["*"] with your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/health")
 async def health_check():
