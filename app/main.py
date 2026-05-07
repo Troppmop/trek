@@ -1,7 +1,8 @@
 from operator import add
 
 from fastapi import FastAPI
-
+import asyncio
+from contextlib import asynccontextmanager
 from routes.router import router
 from dal.postgres import PostgresDAL
 from core.config import Settings
@@ -9,11 +10,13 @@ from core.config import Settings
 settings = Settings()
 
 # Add shutdown logic here, such as closing database connections
-def lifespan(app: FastAPI):
-    app.state.postgres_dal = PostgresDAL(connection_string=f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}/{settings.POSTGRES_DB}")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print(f"\n[DEBUG] ASYNC_POSTGRES_URL is: '{settings.ASYNC_POSTGRES_URL}'\n")    
+    app.state.postgres_dal = PostgresDAL(connection_string=settings.ASYNC_POSTGRES_URL)   
     yield
     # Cleanup code here (e.g., close DB connections)
-    app.state.postgres_dal.engine.dispose()
+    await app.state.postgres_dal.engine.dispose()
     app.state.postgres_dal = None
 
 app = FastAPI(lifespan=lifespan)

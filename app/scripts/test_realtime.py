@@ -1,26 +1,33 @@
 import requests
 from google.transit import gtfs_realtime_pb2
-from google.protobuf.json_format import MessageToDict
-import json
 
 URL = "https://gtfs.mot.gov.il/gtfsrealtime/TripUpdates.pb"
 
-def inspect_schema():
-    print(f"Fetching {URL}...")
-    response = requests.get(URL)
-    
-    print(response.content)
+def test_realtime_with_headers():
+    # Mimic a real web browser
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/x-protobuf, */*',
+    }
 
-
-    # # Convert the first entity to a dictionary to see the full structure
-    # if len(feed.entity) > 0:
-    #     # We take just one entity to avoid a wall of text
-    #     sample_entity = MessageToDict(feed.entity[0])
+    try:
+        print(f"Fetching feed with browser headers...")
+        response = requests.get(URL, headers=headers, timeout=15)
         
-    #     print("\n--- ACTUAL DATA SCHEMA (JSON REPRESENTATION) ---")
-    #     print(json.dumps(sample_entity, indent=2, ensure_ascii=False))
-    # else:
-    #     print("Feed was empty.")
+        # Check if we got HTML (error) or Binary (success)
+        content_type = response.headers.get('Content-Type', '')
+        if 'text/html' in content_type:
+            print("❌ Still getting blocked! The server returned HTML instead of data.")
+            return
+
+        # Try to parse the binary content
+        feed = gtfs_realtime_pb2.FeedMessage()
+        feed.ParseFromString(response.content)
+
+        print(f"✅ Success! Parsed {len(feed.entity)} updates.")
+        
+    except Exception as e:
+        print(f"❌ Error: {e}")
 
 if __name__ == "__main__":
-    inspect_schema()
+    test_realtime_with_headers()

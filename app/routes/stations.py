@@ -52,8 +52,11 @@ async def get_stop_arrivals(request:Request, stop_id: int):
     """)
     
         # FIXED VERSION
-    result = await request.app.state.postgres_dal.execute_query(query, {"stop_id": stop_id, "now": now})
-    # The modern SQLAlchemy 2.0 way
+# Force stop_id to be a string so asyncpg is happy
+    result = await request.app.state.postgres_dal.execute_query(
+        query, 
+        {"stop_id": str(stop_id), "now": now}
+    )    # The modern SQLAlchemy 2.0 way
     arrivals = [dict(row._mapping) for row in result]
         
     return {
