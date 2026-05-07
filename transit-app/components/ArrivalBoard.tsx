@@ -10,7 +10,7 @@ export default function ArrivalBoard({ stop, onClose }: { stop: any, onClose: ()
     if (!stop?.stop_id) return;
 
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stations/${stop.stop_id}/arrivals`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stations/${stop.stop_id}/arrivals/`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       

@@ -9,7 +9,7 @@ export default function Search({ onSelectResult }: any) {
   const handleSearch = async (val: string) => {
     setQuery(val);
     if (val.length < 2) return setResults([]);
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/search?q=${val}`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/search?q=${val}/`);
     setResults(await res.json());
   };
 

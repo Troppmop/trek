@@ -8,7 +8,7 @@ export default function RouteList({ onSelectRoute, selectedId }: any) {
   useEffect(() => {
     // 1. Remove trailing slash to avoid 307 redirects
     // 2. Add catch block to handle "Failed to fetch" errors
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/routes`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/routes/`)
       .then(res => {
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
         return res.json();

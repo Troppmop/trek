@@ -41,7 +41,7 @@ export default function MapView({ routeId, onStopClick, selectedStop }: MapViewP
 
     const updateMap = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/routes/${routeId}/geometry`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/routes/${routeId}/geometry/`);
         if (!res.ok) return;
         const geojson = await res.json();
 
@@ -63,7 +63,7 @@ export default function MapView({ routeId, onStopClick, selectedStop }: MapViewP
         markersRef.current.forEach(m => m.remove());
         markersRef.current = [];
 
-        const stopsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/routes/${routeId}/stops`);
+        const stopsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/routes/${routeId}/stops/`);
         if (stopsRes.ok) {
           const stops = await stopsRes.json();
           stops.forEach((stop: any) => {
